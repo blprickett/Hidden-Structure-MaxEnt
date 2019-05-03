@@ -24,7 +24,7 @@ The script "Hidden Structure L-BFGS-B.py" implements a Maximum Entropy learner (
   - TD_DIR: this is the directory that the training data is in.
   - PREFIX: this is a prefix that should be at the beginning of all your training data (and that will appear in the script's output files).
 
-##References
+## References
 Byrd, R. H., Lu, P., Nocedal, J., & Zhu, C. (1995). A limited memory algorithm for bound constrained optimization. SIAM Journal on Scientific Computing, 16(5), 1190–1208.
 Dempster, A. P., Laird, N. M., & Rubin, D. B. (1977). Maximum likelihood from incomplete data via the EM algorithm. Journal of the Royal Statistical Society: Series B (Methodological), 39(1), 1–22.
 Jarosz, G. (2013). Learning with hidden structure in optimality theory and harmonic grammar: Beyond robust interpretive parsing. Phonology, 30(1), 27–71.
