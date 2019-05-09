@@ -2,7 +2,7 @@
 The script "Hidden Structure L-BFGS-B.py" implements a Maximum Entropy learner (Goldwater and Johnson 2003) that can handle hidden structure learning problems (Tesar and Smolensky 2000, Jarosz 2013). The optimization algorithm used is L-BFGS-B (Byrd et al. 1995), combined with Expectation Maximization (Dempster et al. 1977).
 
 ## Input Data
-- Sample training data (from Tesar and Smolensky 2000) can be viewed in the "Input Files" directory.
+- Sample training data (from Tesar and Smolensky 2000) can be viewed in the "Input Files" directory (this directory name needs to stay the same for the script to work).
   - Each file represents a single stress pattern
   - The first four columns represent:
     - UR: the underlying representation of a word. Can be associated with multiple SR candidates.
@@ -12,6 +12,7 @@ The script "Hidden Structure L-BFGS-B.py" implements a Maximum Entropy learner (
 - All subsequent columns give the violation profiles for their respective HR's. 
 
 ## Output Files
+- Be sure to include a directory named "Output Files", as the script will be expecting that to exist.
 - The script creates two kinds of output files:
   - The main output files for each language are identical to the training data files, except that:
     - Constraint weights are included...
