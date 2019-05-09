@@ -14,7 +14,7 @@ The script "Hidden Structure L-BFGS-B.py" implements a Maximum Entropy learner (
 ## Output Files
 - The script creates two kinds of output files:
   - The main output files for each language are identical to the training data files, except that:
-    - Constraint weights are included,
+    - Constraint weights are included...
     - ...And the learner's expected probabilities (p_LE) are included in addition to the training data probabilities (p_TD in the output files)
   - A summary "successes" file is also printed, telling you which of the languages were successfully converged on (where success is defined as assigning >90% probability to each SR with a probability of 1 in the training data).
 
@@ -26,6 +26,7 @@ The script "Hidden Structure L-BFGS-B.py" implements a Maximum Entropy learner (
   - mpmath
   - re
   - os
+  - datetime
 - The script doesn't take commandline arguments--but there are some things you can easily customize in the "USER SETTINGS" section at the beginning of the code:
   - RAND_WEIGHTS: if this is "True", initial weights are randomly sampled from 1-10.
   - INIT_WEIGHT: If RAND_WEIGHTS is "False", weights are initialized to this value.

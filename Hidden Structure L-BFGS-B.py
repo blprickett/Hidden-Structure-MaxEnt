@@ -4,12 +4,12 @@ from scipy.stats import entropy
 from scipy.optimize import minimize
 import mpmath
 from re import sub, search
-from os import listdir
+from os import listdir, path
+from datetime import datetime
 
 #####USER SETTINGS#####  
 RAND_WEIGHTS = False #Are intial weights random (or all 1?)
-TD_DIR = "Tesar and Smolensky Langs" #Directory containing training data
-PREFIX = "ts" #all language files should start with this, then have a numerical label, then ".csv".
+INIT_WEIGHT = 1.0
 
 #####CUSTOM FUNCTIONS##### 
 def get_predicted_probs (weights, viols):
@@ -95,11 +95,13 @@ def objective_func (weights, viols, td_probs, SRs):
     
     
 ######LOOP THROUGH ALL LANGUAGES######
-success_file = open("C:\\Users\\Brandon\\OneDrive\\Research\\Hidden Structure\\lbfgsb_successes_"+PREFIX+".csv", "w")
-datumProb_file = open("C:\\Users\\Brandon\\OneDrive\\Research\\Hidden Structure\\datum_probs_"+PREFIX+".csv", "w")
-test_langs = [sub("[^0-9]", "", fn) for fn in listdir(TD_DIR)]
+my_time = sub(":", ".", str(datetime.now()))
+success_file = open(path.join("Output Files", "successes_"+my_time+".csv"), "w") 
+success_file.write("Language,Successful?\n")
+input_files = listdir("Input Files")
+test_langs = [sub("[^0-9]", "", fn) for fn in input_files]
 
-for language in test_langs:  
+for lang_index, language in enumerate(test_langs):      
     #####TRAINING DATA##### 
     #Needs to create three numpy arrays:
     #    >w: array of weights of length C
@@ -112,8 +114,9 @@ for language in test_langs:
     print "Processing input file #"+str(language),
        
     #Get constraint names:
-    tableaux_file = open(TD_DIR+"\\"+PREFIX+str(language)+".csv", "r")
+    tableaux_file = open(path.join("Input Files", input_files[lang_index]), "r")
     headers = tableaux_file.readline().rstrip().split(",")
+    CON = headers[4:]
     
     #Get violation vectors:
     v = []
@@ -121,7 +124,9 @@ for language in test_langs:
     sr = []
     ur = []
     hr = []
+    input_lines = []
     for row in tableaux_file.readlines():
+        input_lines.append(row.rstrip().split(","))
         ur_line = search("^([^,]+)\n", row)
         sr_line = search("^,([^,]+),([^,]+)", row)
         hr_line = search("^,,,([^,]+),(.+)", row)
@@ -171,24 +176,40 @@ for language in test_langs:
         print "Initial weights: ", w
     else:  
         #w = np.array([0.0 for c in v[0]])   #Init constraint weights = 0
-        w = [1.0 for c in v[0]]  #Init constraint weights = 10
+        w = [INIT_WEIGHT for c in v[0]]  #Init constraint weights = 10
     v = np.array(v)                   #Constraint violations
     p = np.array(new_probs)  
     
     #####LEARNING##### 
-    print " ...Learning..."
+    print " ...Learning...",
     final_weights = minimize(objective_func, w, args=(v, p, sr), method="L-BFGS-B", bounds=[(0.0, 200) for x in w])['x']
+    current_probs = get_predicted_probs(np.array(final_weights), v)
            
     #####OUTPUT##### 
-    current_probs = get_predicted_probs(np.array(final_weights), v)
+    print "...Saving output..."
+    #Main Output file:
+    output_file = open(path.join("Output Files", language+"_Output_"+my_time+".csv"), "w")
+    new_headers = headers[:2]+["p_TD", "p_LE"]+headers[3:]
+    output_file.write(",".join(new_headers)+"\n,,,,,")
+    for fw in final_weights:
+        output_file.write(str(fw)+",")
+    output_file.write("\n")
+    datum_index = 0
+    for old_line in input_lines:
+        if len(old_line) < 4:
+            output_file.write(",".join(old_line)+"\n") 
+        else:
+            new_line = old_line[:2]+["", str(current_probs[datum_index])]+old_line[3:]
+            output_file.write(",".join(new_line)+"\n")
+            datum_index += 1   
+    output_file.close()
+
+    #Success file:
     learned = True
-    attested_data = []
     for datum_index, form in enumerate(sr):
         if probs[datum_index] != 1: 
-            #We're only checking correct forms
+            #We're only checking correct forms, skip the incorrect ones.
             continue
-        else:
-            attested_data.append(form)
         SR_indeces = sr2datum[form] #Find all the training data that use this SR
         UR_indeces = ur2datum[ur[datum_index]] #Find all the training data that use this UR
         predicted_SRprob = sum(current_probs[SR_indeces]) #Sum the SR probs (merges different HR's)
@@ -197,40 +218,19 @@ for language in test_langs:
             exit("Rounding error! pr(UR)=0")
         else:
             conditional_prob = predicted_SRprob/predicted_URprob #Find the prob of this SR, given its UR
-            #print hr[datum_index], ",", form, current_probs[datum_index], conditional_prob
-        if conditional_prob < .5: #If the majority of prob isn't given to the correct SR...
-            #print form, conditional_prob
+        if conditional_prob < .9: #If >90% of prob isn't given to the correct SR...
             learned = False
-            
-    #Record the probability assigned to each (hidden) structure
-    if learned:
-        datumProb_file.write("Lang: "+str(language)+"\n")
-        for attested_sr in attested_data:
-            datumProb_file.write(","+attested_sr+"\n")
-            crit_50 = False
-            for hr_index in sr2datum[attested_sr]:
-                hr_prob = current_probs[hr_index]
-                ur_prob = sum(current_probs[ur2datum[ur[datum_index]]])
-                my_cond_prob = hr_prob/ur_prob
-                if my_cond_prob > .5:
-                    crit_50 = True
-                datumProb_file.write(",,"+hr[hr_index]+","+str(my_cond_prob)+"\n")
-            if crit_50:
-                datumProb_file.write(",Met stict criterion (>50% on a single structure)\n")
-            else:
-                datumProb_file.write(",Did not meet stict criterion (>50% on a single structure)\n")
-                       
+                                 
     #Record whether we met the criterion:
     if learned:
-        for possible_bug in current_probs:
-            if np.isnan(possible_bug):
-                exit("Found a NAN!")
-        print "Language "+str(language)+" was successfully learned."
-        success_file.write("Language "+str(language)+",1\n")
+        for cp in current_probs:
+            if np.isnan(cp):
+                exit("Found a NAN! Possible rounding error in probabilities.")
+        print "Language "+language+" was successfully learned."
+        success_file.write(language+",1\n")
     else:
-        print "Language "+str(language)+" was NOT learned."
-        success_file.write("Language "+str(language)+",0\n")
+        print "Language "+language+" was NOT learned."
+        success_file.write(language+",0\n")
         
 #Deal with output files:
 success_file.close()
-datumProb_file.close()
