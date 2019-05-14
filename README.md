@@ -1,5 +1,5 @@
 # Hidden-Structure-MaxEnt
-The script "Hidden Structure L-BFGS-B.py" implements a Maximum Entropy learner (Goldwater and Johnson 2003) that can handle hidden structure learning problems (Tesar and Smolensky 2000, Jarosz 2013). The optimization algorithm used is L-BFGS-B (Byrd et al. 1995), combined with Expectation Maximization (Dempster et al. 1977).
+The script "Hidden_Structure_L-BFGS-B.py" implements a Maximum Entropy learner (Goldwater and Johnson 2003) that can handle hidden structure learning problems (Tesar and Smolensky 2000, Jarosz 2013). The optimization algorithm used is L-BFGS-B (Byrd et al. 1995), combined with Expectation Maximization (Dempster et al. 1977).
 
 ## Input Data
 - Sample training data (from Tesar and Smolensky 2000) can be viewed in the "Input Files" directory (this directory name needs to stay the same for the script to work).
