@@ -96,9 +96,9 @@ def objective_func (weights, viols, td_probs, SRs):
     
 ######LOOP THROUGH ALL LANGUAGES######
 my_time = sub(":", ".", str(datetime.now()))
-success_file = open(path.join("Output Files", "successes_"+my_time+".csv"), "w") 
+success_file = open(path.join("Output_Files", "successes_"+my_time+".csv"), "w") 
 success_file.write("Language,Successful?\n")
-input_files = listdir("Input Files")
+input_files = listdir("Input_Files")
 test_langs = [sub("[^0-9]", "", fn) for fn in input_files]
 
 for lang_index, language in enumerate(test_langs):      
@@ -114,7 +114,7 @@ for lang_index, language in enumerate(test_langs):
     print "Processing input file #"+str(language),
        
     #Get constraint names:
-    tableaux_file = open(path.join("Input Files", input_files[lang_index]), "r")
+    tableaux_file = open(path.join("Input_Files", input_files[lang_index]), "r")
     headers = tableaux_file.readline().rstrip().split(",")
     CON = headers[4:]
     
@@ -175,8 +175,7 @@ for lang_index, language in enumerate(test_langs):
         w = list(np.random.uniform(low=0.0, high=10.0, size=len(v[0])))   #Init constraint weights = rand 1-10
         print "Initial weights: ", w
     else:  
-        #w = np.array([0.0 for c in v[0]])   #Init constraint weights = 0
-        w = [INIT_WEIGHT for c in v[0]]  #Init constraint weights = 10
+        w = [INIT_WEIGHT for c in v[0]]  #Init constraint weights = INIT_WEIGHT
     v = np.array(v)                   #Constraint violations
     p = np.array(new_probs)  
     
@@ -188,7 +187,7 @@ for lang_index, language in enumerate(test_langs):
     #####OUTPUT##### 
     print "...Saving output..."
     #Main Output file:
-    output_file = open(path.join("Output Files", language+"_Output_"+my_time+".csv"), "w")
+    output_file = open(path.join("Output_Files", language+"_Output_"+my_time+".csv"), "w")
     new_headers = headers[:2]+["p_TD", "p_LE"]+headers[3:]
     output_file.write(",".join(new_headers)+"\n,,,,,")
     for fw in final_weights:

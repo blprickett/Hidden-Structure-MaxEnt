@@ -2,7 +2,7 @@
 The script "Hidden_Structure_L-BFGS-B.py" implements a Maximum Entropy learner (Goldwater and Johnson 2003) that can handle hidden structure learning problems (Tesar and Smolensky 2000, Jarosz 2013). The optimization algorithm used is L-BFGS-B (Byrd et al. 1995), combined with Expectation Maximization (Dempster et al. 1977).
 
 ## Input Data
-- Sample training data (from Tesar and Smolensky 2000) can be viewed in the "Input Files" directory (this directory name needs to stay the same for the script to work).
+- Sample training data (from Tesar and Smolensky 2000) can be viewed in the "Input_Files" directory (this directory name needs to stay the same for the script to work).
   - Each file represents a single stress pattern
   - The first four columns represent:
     - UR: the underlying representation of a word. Can be associated with multiple SR candidates.
@@ -12,7 +12,7 @@ The script "Hidden_Structure_L-BFGS-B.py" implements a Maximum Entropy learner (
 - All subsequent columns give the violation profiles for their respective HR's. 
 
 ## Output Files
-- Be sure to include a directory named "Output Files", as the script will be expecting that to exist.
+- Be sure to include a directory named "Output_Files", as the script will be expecting that to exist.
 - The script creates two kinds of output files:
   - The main output files for each language are identical to the training data files, except that:
     - Constraint weights are included...
@@ -20,14 +20,14 @@ The script "Hidden_Structure_L-BFGS-B.py" implements a Maximum Entropy learner (
   - A summary "successes" file is also printed, telling you which of the languages were successfully converged on (where success is defined as assigning >90% probability to each SR with a probability of 1 in the training data).
 
 ## Using the Model
-- The model is made to run in Python 2, and requires the following packages:
+- The model is made to run in Python 2, and requires the following packages (os, sys, and re should have been installed automatically with Python):
   - numpy
-  - sys
+  - datetime
   - scipy
   - mpmath
   - re
   - os
-  - datetime
+  - sys
 - The script doesn't take commandline arguments--but there are some things you can easily customize in the "USER SETTINGS" section at the beginning of the code:
   - RAND_WEIGHTS: if this is "True", initial weights are randomly sampled from 1-10.
   - INIT_WEIGHT: If RAND_WEIGHTS is "False", weights are initialized to this value.
