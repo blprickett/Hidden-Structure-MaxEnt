@@ -100,6 +100,7 @@ success_file = open(path.join("Output_Files", "successes_"+my_time+".csv"), "w")
 success_file.write("Language,Successful?\n")
 input_files = listdir("Input_Files")
 test_langs = [sub("[^0-9]", "", fn) for fn in input_files]
+test_langs = ["1"]
 
 for lang_index, language in enumerate(test_langs):      
     #####TRAINING DATA##### 
@@ -167,7 +168,7 @@ for lang_index, language in enumerate(test_langs):
     new_probs = [] 
     probs = np.array(probs)
     for datum_index, this_prob in enumerate(probs):
-        new_prob = this_prob/(sum(probs[ur2datum[ur[datum_index]]])*UR_num)
+        new_prob = this_prob/(len(sr2datum[sr[datum_index]])*UR_num)
         new_probs.append(new_prob)
       
     #Vectors that we need: 
