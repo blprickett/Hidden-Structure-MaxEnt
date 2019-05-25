@@ -17,7 +17,7 @@ The script "Hidden_Structure_L-BFGS-B.py" implements a Maximum Entropy learner (
   - The main output files for each language are identical to the training data files, except that:
     - Constraint weights are included...
     - ...And the learner's expected probabilities (p_LE) are included in addition to the training data probabilities (p_TD in the output files)
-  - A summary "successes" file is also printed, telling you which of the languages were successfully converged on (where success is defined as assigning >90% probability to each SR with a probability of 1 in the training data).
+  - A summary "successes" file is also printed, telling you which of the languages were successfully converged on (where success is defined as assigning >90% probability to each SR with a probability of 1 in the training data--note that this criterion only makes sense for categorical patterns!).
 
 ## Using the Model
 - The model is made to run in Python 2, and requires the following packages (os, sys, and re should have been installed automatically with Python):
