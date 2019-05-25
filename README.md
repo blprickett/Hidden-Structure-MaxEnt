@@ -28,7 +28,7 @@ The script "Hidden_Structure_L-BFGS-B.py" implements a Maximum Entropy learner (
   - re
   - os
   - sys
-- The script doesn't take commandline arguments--but there are some things you can easily customize in the "USER SETTINGS" section at the beginning of the code:
+- The script doesn't take command line arguments--but there are some things you can easily customize in the "USER SETTINGS" section at the beginning of the code:
   - RAND_WEIGHTS: if this is "True", initial weights are randomly sampled from 1-10.
   - INIT_WEIGHT: If RAND_WEIGHTS is "False", weights are initialized to this value.
 
