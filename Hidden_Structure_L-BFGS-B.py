@@ -100,7 +100,7 @@ success_file = open(path.join("Output_Files", "successes_"+my_time+".csv"), "w")
 success_file.write("Language,Successful?\n")
 input_files = listdir("Input_Files")
 test_langs = [sub("[^0-9]", "", fn) for fn in input_files]
-test_langs = ["1"]
+#test_langs = ["1"]
 
 for lang_index, language in enumerate(test_langs):      
     #####TRAINING DATA##### 
