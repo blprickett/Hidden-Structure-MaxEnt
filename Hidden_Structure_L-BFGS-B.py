@@ -1,5 +1,4 @@
 import numpy as np
-from sys import exit
 from scipy.stats import entropy
 from scipy.optimize import minimize
 import mpmath
@@ -34,7 +33,10 @@ def get_predicted_probs (weights, viols):
     probs = []
     for datum_index, eharm in enumerate(eharmonies):
         if Zs[datum_index]==0:
-            exit("Rounding error! (Z=0 for "+ur[datum_index]+")")
+            error_f = open("_weights.csv", "w")
+            error_f.write("\n".join([str(w) for w in weights]))
+            error_f.close()
+            raise Exception("Rounding error! (Z=0 for "+ur[datum_index]+")")
         else:
             probs.append(eharm/Zs[datum_index])
        
@@ -62,7 +64,7 @@ def exact_predicted_probs (weights, viols):
     probs = []
     for datum_index, eharm in enumerate(eharmonies):
         if Zs[datum_index]==0:
-            exit("Rounding error (exact function)! (Z=0 for "+ur[datum_index]+")")
+            raise Exception("Rounding error (exact function)! (Z=0 for "+ur[datum_index]+")")
         else:
             probs.append(eharm/Zs[datum_index])
        
@@ -99,8 +101,7 @@ my_time = sub(":", ".", str(datetime.now()))
 success_file = open(path.join("Output_Files", "successes_"+my_time+".csv"), "w") 
 success_file.write("Language,Successful?\n")
 input_files = listdir("Input_Files")
-test_langs = [sub("[^0-9]", "", fn) for fn in input_files]
-#test_langs = ["1"]
+test_langs = [sub("[^0-9]", "", l) for l in input_files]
 
 for lang_index, language in enumerate(test_langs):      
     #####TRAINING DATA##### 
@@ -112,7 +113,7 @@ for lang_index, language in enumerate(test_langs):
     #...And a dictionary called "sr2datum" that maps SR's to a list of
     #   the data (i.e. indeces in v and p) that they're associated with.
 
-    print "Processing input file #"+str(language),
+    print ("Processing input file #"+str(language))
        
     #Get constraint names:
     tableaux_file = open(path.join("Input_Files", input_files[lang_index]), "r")
@@ -144,7 +145,7 @@ for lang_index, language in enumerate(test_langs):
             raw_viols = hr_line.group(2).rstrip().split(",")
             my_viols = [-1 * int(viol) for viol in raw_viols]  
         else:
-            exit("Error in Training Data File! (line: "+row.rstrip()+")")
+            raise Exception("Error in Training Data File! (line: "+row.rstrip()+")")
         
         hr.append(my_hid)
         sr.append(my_out)
@@ -174,19 +175,19 @@ for lang_index, language in enumerate(test_langs):
     #Vectors that we need: 
     if RAND_WEIGHTS:
         w = list(np.random.uniform(low=0.0, high=10.0, size=len(v[0])))   #Init constraint weights = rand 1-10
-        print "Initial weights: ", w
+        print ("Initial weights: ", w)
     else:  
         w = [INIT_WEIGHT for c in v[0]]  #Init constraint weights = INIT_WEIGHT
     v = np.array(v)                   #Constraint violations
     p = np.array(new_probs)  
     
     #####LEARNING##### 
-    print " ...Learning...",
+    print (" ...Learning...")
     final_weights = minimize(objective_func, w, args=(v, p, sr), method="L-BFGS-B", bounds=[(0.0, 200) for x in w])['x']
     current_probs = get_predicted_probs(np.array(final_weights), v)
            
     #####OUTPUT##### 
-    print "...Saving output..."
+    print ("...Saving output...")
     #Main Output file:
     output_file = open(path.join("Output_Files", language+"_Output_"+my_time+".csv"), "w")
     new_headers = headers[:2]+["p_TD", "p_LE"]+headers[3:]
@@ -215,7 +216,7 @@ for lang_index, language in enumerate(test_langs):
         predicted_SRprob = sum(current_probs[SR_indeces]) #Sum the SR probs (merges different HR's)
         predicted_URprob = sum(current_probs[UR_indeces]) #Sum the UR probs (merges different SR's and HR's)
         if predicted_URprob == 0:
-            exit("Rounding error! pr(UR)=0")
+            raise Exception("Rounding error! pr(UR)=0")
         else:
             conditional_prob = predicted_SRprob/predicted_URprob #Find the prob of this SR, given its UR
         if conditional_prob < .9: #If >90% of prob isn't given to the correct SR...
@@ -225,11 +226,11 @@ for lang_index, language in enumerate(test_langs):
     if learned:
         for cp in current_probs:
             if np.isnan(cp):
-                exit("Found a NAN! Possible rounding error in probabilities.")
-        print "Language "+language+" was successfully learned."
+                raise Exception("Found a NAN! Possible rounding error in probabilities.")
+        print ("Language "+language+" was successfully learned.")
         success_file.write(language+",1\n")
     else:
-        print "Language "+language+" was NOT learned."
+        print ("Language "+language+" was NOT learned.")
         success_file.write(language+",0\n")
         
 #Deal with output files:
