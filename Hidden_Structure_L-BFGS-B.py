@@ -7,7 +7,7 @@ from os import listdir, path
 from datetime import datetime
 
 #####USER SETTINGS#####  
-RAND_WEIGHTS = False #Are intial weights random (or all 1?)
+RAND_WEIGHTS = False #Are intial weights random (or all set to the value below)?
 INIT_WEIGHT = 1.0
 
 #####CUSTOM FUNCTIONS##### 
