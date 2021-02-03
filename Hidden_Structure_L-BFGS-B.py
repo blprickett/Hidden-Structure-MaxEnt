@@ -103,10 +103,6 @@ success_file.write("Language,Successful?\n")
 input_files = listdir("Input_Files")
 test_langs = [sub("[^0-9]", "", l) for l in input_files]
 
-#This makes it only look at the file labeld "ts1":
-input_files = ["ts1.csv", "ts2.csv", "ts44.csv", "ts79.csv"]
-test_langs = ["1", "2", "44", "79"]
-
 for lang_index, language in enumerate(test_langs):      
     #####TRAINING DATA##### 
     #Needs to create three numpy arrays:
