@@ -103,6 +103,10 @@ success_file.write("Language,Successful?\n")
 input_files = listdir("Input_Files")
 test_langs = [sub("[^0-9]", "", l) for l in input_files]
 
+#This makes it only look at the file labeld "ts1":
+input_files = ["ts1.csv", "ts2.csv", "ts44.csv", "ts79.csv"]
+test_langs = ["1", "2", "44", "79"]
+
 for lang_index, language in enumerate(test_langs):      
     #####TRAINING DATA##### 
     #Needs to create three numpy arrays:
@@ -188,7 +192,7 @@ for lang_index, language in enumerate(test_langs):
            
     #####OUTPUT##### 
     print ("...Saving output...")
-    #Main Output file:
+    #Main output file:
     output_file = open(path.join("Output_Files", language+"_Output_"+my_time+".csv"), "w")
     new_headers = headers[:2]+["p_TD", "p_LE"]+headers[3:]
     output_file.write(",".join(new_headers)+"\n,,,,,")
@@ -204,6 +208,49 @@ for lang_index, language in enumerate(test_langs):
             output_file.write(",".join(new_line)+"\n")
             datum_index += 1   
     output_file.close()
+    
+    #More succinct output file: 
+    #Find highest probability parse (according to model) for each UR (i.e. tableau):
+    ur2bestParse = {}
+    ur2highestProb = {}
+    ur2totalProbs = {}
+    for datum_index, form in enumerate(ur):
+        if form in ur2highestProb.keys():
+            if ur2highestProb[form] < current_probs[datum_index]:
+                ur2highestProb[form] = current_probs[datum_index]
+                ur2bestParse[form] = hr[datum_index]
+            ur2totalProbs[form] += current_probs[datum_index]
+        else:
+            ur2highestProb[form] = current_probs[datum_index]
+            ur2bestParse[form] = hr[datum_index]
+            ur2totalProbs[form] = current_probs[datum_index]
+    
+    #Print those parses into a CSV:
+    brief_output_file = open(path.join("Output_Files", language+"_BriefOutput_"+my_time+".csv"), "w")
+    new_headers = ["UR", "HR", "p_TD", "p_normed", "p_absolute"]+headers[4:]
+    brief_output_file.write(",".join(new_headers)+"\n,,,,,")
+    for fw in final_weights:
+        brief_output_file.write(str(fw)+",")
+    brief_output_file.write("\n")
+    datum_index = 0
+    for old_line in input_lines:
+        if len(old_line) == 1:
+            UR = old_line[0]
+        elif len(old_line) == 3:
+            SR = old_line[1]
+            TD_prob = old_line[2]
+        elif len(old_line) > 4:
+            HR = old_line[3]
+            absProb = current_probs[datum_index]
+            normedProb = absProb/ur2totalProbs[UR]
+            if HR == ur2bestParse[UR]:
+                new_line = [UR, HR, "1.0", str(normedProb), str(absProb)]+old_line[4:]
+                brief_output_file.write(",".join(new_line)+"\n")
+            datum_index += 1  
+        else:
+            print(old_line)
+            raise Exception("Unexpected line type!")
+    brief_output_file.close()    
 
     #Success file:
     learned = True
