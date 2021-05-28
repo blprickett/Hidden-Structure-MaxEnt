@@ -260,29 +260,13 @@ for lang_index, language in enumerate(test_langs):
     current_probs = get_predicted_probs(np.array(final_weights), v)
            
     #####OUTPUT##### 
-    print ("...Saving output...")
-    #Main output file:
-    output_file = open(path.join("Output_Files", language+"_Output_"+my_time+".csv"), "w")
-    new_headers = headers[:2]+["p_TD", "p_LE"]+headers[3:]
-    output_file.write(",".join(new_headers)+"\n,,,,,")
-    for fw in final_weights:
-        output_file.write(str(fw)+",")
-    output_file.write("\n")
-    datum_index = 0
-    for old_line in input_lines:
-        if len(old_line) < 4:
-            output_file.write(",".join(old_line)+"\n") 
-        else:
-            new_line = old_line[:2]+["", str(current_probs[datum_index])]+old_line[3:]
-            output_file.write(",".join(new_line)+"\n")
-            datum_index += 1   
-    output_file.close()
-    
+    print ("...Saving output...")    
     #More succinct output file: 
     #Find highest probability parse (according to model) for each UR (i.e. tableau):
     ur2bestParse = {}
     ur2highestProb = {}
     ur2totalProbs = {}
+    mapping2prob = {}
     for datum_index, form in enumerate(ur):
         if form in ur2highestProb.keys():
             if ur2highestProb[form] < current_probs[datum_index]:
@@ -293,7 +277,12 @@ for lang_index, language in enumerate(test_langs):
             ur2highestProb[form] = current_probs[datum_index]
             ur2bestParse[form] = hr[datum_index]
             ur2totalProbs[form] = current_probs[datum_index]
-    
+            
+        if (form, sr[datum_index]) in mapping2prob.keys():
+            mapping2prob[(form, sr[datum_index])] += current_probs[datum_index]
+        else:
+            mapping2prob[(form, sr[datum_index])] = current_probs[datum_index]
+            
     #Print those parses into a CSV:
     brief_output_file = open(path.join("Output_Files", language+"_BriefOutput_"+my_time+".csv"), "w")
     new_headers = ["UR", "HR", "p_TD", "p_normed", "p_absolute"]+headers[4:]
@@ -319,7 +308,27 @@ for lang_index, language in enumerate(test_langs):
         else:
             print(old_line)
             raise Exception("Unexpected line type!")
-    brief_output_file.close()    
+    brief_output_file.close()
+
+    #Main output file:
+    output_file = open(path.join("Output_Files", language+"_Output_"+my_time+".csv"), "w")
+    new_headers = headers[:2]+["p(SR)_TD", "p(SR)_LE","p(HR)_normed", "p(HR)_absolute"]+headers[3:]
+    output_file.write(",".join(new_headers)+"\n,,,,,,,")
+    for fw in final_weights:
+        output_file.write(str(fw)+",")
+    output_file.write("\n")
+    datum_index = 0
+    for old_line in input_lines:
+        if len(old_line) == 3:
+            new_line = old_line+[str(mapping2prob[(ur[datum_index],sr[datum_index])]/ur2totalProbs[ur[datum_index]])]
+            output_file.write(",".join(new_line)+"\n")            
+        elif len(old_line) < 4:
+            output_file.write(",".join(old_line)+"\n") 
+        else:
+            new_line = old_line[:2]+["", "", str(current_probs[datum_index]/ur2totalProbs[ur[datum_index]]), str(current_probs[datum_index])]+old_line[3:]
+            output_file.write(",".join(new_line)+"\n")
+            datum_index += 1   
+    output_file.close()    
 
     #Success file:
     learned = True
