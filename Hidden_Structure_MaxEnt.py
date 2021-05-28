@@ -7,7 +7,7 @@ from os import listdir, path
 from datetime import datetime
 
 #####USER SETTINGS#####  
-LANG_SET = "ExtraConstraints"
+LANG_SET = "Tesar"
 RAND_WEIGHTS = True #Are intial weights random (or all set to the value below)?
 INIT_WEIGHT = 1.0
 L2_PRIOR = False
