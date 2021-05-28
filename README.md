@@ -14,13 +14,15 @@ The script "Hidden_Structure_MaxEnt.py" implements a Maximum Entropy learner (Go
 ## Output Files
 - Be sure to include a directory named "Output_Files", as the script will be expecting that to exist.
 - The script creates three kinds of output files:
-  - The main output files for each language are identical to the training data files, except that:
-    - Constraint weights are included...
-    - ...And the learner's expected probabilities (p_LE) are included in addition to the training data probabilities (p_TD in the output files). Note, however, that p_LE will be pr(HR), while p_TD will be the pr(SR|UR).
+  - The main output files for each language have the same information as the training data files, with the addition of:
+    - The constraint weights at the end of learning.
+    - The learner's expected probabilities for each SR, labeled "p(SR)_LE". Note that the SR probabilities from the training data are labeled "p(SR)_TD" in this file.
+    - The learner's expected probability for each HR, normalized by dividing by the other HRs' probabilities for that UR. This is labeled "p(HR)_normed".
+    - The learner's expected probability for each HR without any normalization, "p(HR)_absolute". 
   - A "brief" output file that only prints, for each UR, information about the HR that the model gives the most probabilty to, given that UR as input. The information provided includes: 
-    - p_TD (see description above)
-    - p_absolute (same as p_LE in the full output files)
-    - p_normed, which is the probability the model gives that HR, given the UR. That is, the probability of that HR divided by the probabilities of all the other HR's that UR can map to
+    - "p_TD", which is the same as "p(SR)_TD" above.
+    - "p_absolute", which is the same as "p(HR)_absolute" above.
+    - "p_normed" which is the same as "p(HR)_normed" above.
     - Each HR's constraint violations
     - Each constraint's weights
   - A summary "successes" file is also printed, telling you which of the languages were successfully converged on (where success is defined as assigning >90% probability to each SR with a probability of 1 in the training data--note that this criterion only makes sense for categorical patterns!).
