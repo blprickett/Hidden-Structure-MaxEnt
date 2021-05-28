@@ -7,8 +7,8 @@ from os import listdir, path
 from datetime import datetime
 
 #####USER SETTINGS#####  
-LANG_SET = "ExtraConstraints" #The subdirectory that your 
-RAND_WEIGHTS = True #Are intial weights random (or all set to the value below)?
+LANG_SET = "Tesar" #The subdirectory that your 
+RAND_WEIGHTS = False #Are intial weights random (or all set to the value below)?
 INIT_WEIGHT = 1.0 #Initial weights for the model
 L2_PRIOR = False #This only works for L-BFGS-B and Conjugate Gradient
 LAMBDA = 0.001 #Only matters if you're using the prior
