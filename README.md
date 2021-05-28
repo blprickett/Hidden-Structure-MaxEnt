@@ -23,8 +23,8 @@ The script "Hidden_Structure_MaxEnt.py" implements a Maximum Entropy learner (Go
     - "p_TD", which is the same as "p(SR)_TD" above.
     - "p_absolute", which is the same as "p(HR)_absolute" above.
     - "p_normed" which is the same as "p(HR)_normed" above.
-    - Each HR's constraint violations
-    - Each constraint's weights
+    - Each HR's constraint violations.
+    - Each constraint's weights.
   - A summary "successes" file is also printed, telling you which of the languages were successfully converged on (where success is defined as assigning >90% probability to each SR with a probability of 1 in the training data--note that this criterion only makes sense for categorical patterns!).
 
 ## Using the Model
