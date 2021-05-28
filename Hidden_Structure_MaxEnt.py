@@ -7,12 +7,12 @@ from os import listdir, path
 from datetime import datetime
 
 #####USER SETTINGS#####  
-LANG_SET = "Tesar"
+LANG_SET = "ExtraConstraints" #The subdirectory that your 
 RAND_WEIGHTS = True #Are intial weights random (or all set to the value below)?
-INIT_WEIGHT = 1.0
-L2_PRIOR = False
+INIT_WEIGHT = 1.0 #Initial weights for the model
+L2_PRIOR = False #This only works for L-BFGS-B and Conjugate Gradient
 LAMBDA = 0.001 #Only matters if you're using the prior
-NEG_WEIGHTS = False
+NEG_WEIGHTS = False #Are negative weights allowed? (Doesn't work for Conjugate Gradient)
 METHOD = "lbfgsb" #gd (for vanilla Gradient Descent), lbfgsb (for L-BFGS-B), or cg (for Conjugate Gradient)
 
 #Things you only specify for gradient descent (the other two algorithms mostly use defaults from scipy.optimize):
