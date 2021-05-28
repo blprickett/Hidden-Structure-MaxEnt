@@ -157,7 +157,7 @@ success_file.write("Language,Successful?\n")
 input_files = [fn for fn in listdir(path.join("Input_Files", LANG_SET)) if ".csv" in fn]
 test_langs = [sub("[^0-9]", "", l) for l in input_files]
 
-#This makes it only look at the file labeld "tsX" 
+#This makes it only look at the file labeled "tsX" 
 #(for debugging purposes, leave commented if you're doing real stuff):
 #X = "1"
 #input_files = ["ts"+X+".csv"]
