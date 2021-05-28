@@ -41,6 +41,8 @@ The script "Hidden_Structure_MaxEnt.py" implements a Maximum Entropy learner (Go
   - LAMBDA: this controls how much higher weights are penalized if L2_Prior is set to "True".
   - NEG_WEIGHTS: if this is "False", negative weights aren't allowed (this doesn't work for the Conjugate Gradient algorithm, though).
   - METHOD: which optimization algorithm do you want to use? Choices are "lbfgsb" (for L-BFGS-B; this is the recommended method), "cg" (for Conjugate Gradient), and "gd" (for Gradient Descent).
+  - EPOCHS: how long full passes through the training data do you want the model to perform? Note that this is only relevant for Gradient Descent. For more on how the other algorithms operate, see their documentation [here](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize).
+  - ETA: What learning rate do you want the model use? That is, how much should it scale each weight's gradient for each update in learning? Note that this is only relevant for Gradient Descent. For more on how the other algorithms operate, see their documentation [here](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize).
 
 ## References
 - Byrd, R. H., Lu, P., Nocedal, J., & Zhu, C. (1995). A limited memory algorithm for bound constrained optimization. *SIAM Journal on Scientific Computing, 16(5)*, 1190–1208.
