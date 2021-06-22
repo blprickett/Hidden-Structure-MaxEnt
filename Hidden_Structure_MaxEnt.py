@@ -7,7 +7,7 @@ from os import listdir, path
 from datetime import datetime
 
 #####USER SETTINGS#####  
-LANG_SET = "Tesar" #The subdirectory that your 
+LANG_SET = "Tesar" #The subdirectory that you have all your training data in 
 RAND_WEIGHTS = False #Are intial weights random (or all set to the value below)?
 INIT_WEIGHT = 1.0 #Initial weights for the model
 L2_PRIOR = False #This only works for L-BFGS-B and Conjugate Gradient
@@ -111,6 +111,8 @@ def objective_func (weights, viols, td_probs, SRs):
     return loss
 
 def gradient_descent (weights, viols, td_probs, SRs, epoch_num):
+    if epoch_num==0:
+        return weights
 
     for epoch in range(epoch_num):
         if epoch!=0:
@@ -147,8 +149,7 @@ def gradient_descent (weights, viols, td_probs, SRs, epoch_num):
         if not NEG_WEIGHTS:
             new_weights = np.maximum(new_weights, 0)
         
-    
-    return new_weights    
+    return new_weights 
     
 ######LOOP THROUGH ALL LANGUAGES######
 my_time = sub(":", ".", str(datetime.now()))
@@ -203,7 +204,7 @@ for lang_index, language in enumerate(test_langs):
         elif hr_line:
             my_hid = hr_line.group(1)
             raw_viols = hr_line.group(2).rstrip().split(",")
-            my_viols = [-1 * int(viol) for viol in raw_viols]  
+            my_viols = [-1 * float(viol) for viol in raw_viols]  
         else:
             raise Exception("Error in Training Data File! (line: "+row.rstrip()+")")
         
