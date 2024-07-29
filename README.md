@@ -2,7 +2,7 @@
 The script "Hidden_Structure_MaxEnt.py" implements a Maximum Entropy learner (Goldwater and Johnson 2003) that can handle hidden structure learning problems (Tesar and Smolensky 2000, Jarosz 2013). The model can use three different optimization algorithms: Gradient Descent, Conjugate Gradient, and L-BFGS-B (Byrd et al. 1995), combining whichever algorithm you choose with Expectation Maximization (Dempster et al. 1977) to deal with the presence of hidden structure. For more information on this software (or why it's necessary), see [the AMP paper](https://journals.linguisticsociety.org/proceedings/index.php/amphonology/article/view/5175) where we published some of our results.
 
 ## Input Data
-- Sample training data (from Tesar and Smolensky 2000) can be viewed in the "Input_Files/Tesar" directory. The directory "Input_Files" needs to keep the same name, but you can have multiple subdirectories inside of it named whatever you like (the name of the subdirectory you want to use is specified using the "LANG_SET" variable in the "Hidden_Structure_MaxEnt.py" script).
+- Sample training data (from Tesar and Smolensky 2000) can be viewed in the "Input_Files/TesarSmokensky-OG" directory. The directory "Input_Files" needs to keep the same name, but you can have multiple subdirectories inside of it named whatever you like (the name of the subdirectory you want to use is specified using the "LANG_SET" variable in the "Hidden_Structure_MaxEnt.py" script).
   - Each file represents a single stress pattern
   - The first four columns represent:
     - UR: the underlying representation of a word. Can be associated with multiple SR candidates.
@@ -26,6 +26,7 @@ The script "Hidden_Structure_MaxEnt.py" implements a Maximum Entropy learner (Go
     - Each HR's constraint violations.
     - Each constraint's weights.
   - A summary "successes" file is also printed, telling you which of the languages were successfully converged on (where success is defined as assigning >90% probability to each SR with a probability of 1 in the training data--note that this criterion only makes sense for categorical patterns!).
+  - If you're using gradient descent, a "EpochsToConvergence" file will also be created. This records how many epochs (full passes through the training data) were required for the model to converge on each pattern it was able to successfully learn.
 
 ## Using the Model
 - The model is made to run in Python 3, and requires the following packages (os, sys, and re should have been installed automatically with Python):
