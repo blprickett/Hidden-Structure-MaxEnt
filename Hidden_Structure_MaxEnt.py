@@ -7,16 +7,17 @@ from os import listdir, path
 from datetime import datetime
 
 #####USER SETTINGS#####  
-LANG_SET = "Tesar" #The subdirectory that you have all your training data in 
+LANG_SET = "TesarSmolensky" #The subdirectory that you have all your training data in 
 RAND_WEIGHTS = False #Are intial weights random (or all set to the value below)?
 INIT_WEIGHT = 1.0 #Initial weights for the model
 L2_PRIOR = False #This only works for L-BFGS-B and Conjugate Gradient
+L1_PRIOR = False #This only works for L-BFGS-B and Conjugate Gradient
 LAMBDA = 0.001 #Only matters if you're using the prior
 NEG_WEIGHTS = False #Are negative weights allowed? (Doesn't work for Conjugate Gradient)
-METHOD = "lbfgsb" #gd (for vanilla Gradient Descent), lbfgsb (for L-BFGS-B), or cg (for Conjugate Gradient)
+METHOD = "gd" #gd (for vanilla Gradient Descent), lbfgsb (for L-BFGS-B), or cg (for Conjugate Gradient)
 
 #Things you only specify for gradient descent (the other two algorithms mostly use defaults from scipy.optimize):
-EPOCHS = 1000 #Number of passes through the data
+EPOCHS = 10000 #Number of passes through the data
 ETA = 4. #learning rate
 
 #####CUSTOM FUNCTIONS##### 
@@ -105,6 +106,9 @@ def objective_func (weights, viols, td_probs, SRs):
     if L2_PRIOR:
         prior = np.sum(np.square(weights))
         loss = entropy(weighted_tdProbs, le_probs) + (LAMBDA * prior)
+    elif L1_PRIOR:
+        prior = np.sum(np.absolute(weights))
+        loss = entropy(weighted_tdProbs, le_probs) + (LAMBDA * prior)    
     else:
         loss = entropy(weighted_tdProbs, le_probs)
     
@@ -113,7 +117,7 @@ def objective_func (weights, viols, td_probs, SRs):
 def gradient_descent (weights, viols, td_probs, SRs, epoch_num):
     if epoch_num==0:
         return weights
-
+        
     for epoch in range(epoch_num):
         if epoch!=0:
             weights = np.copy(new_weights)
@@ -148,6 +152,31 @@ def gradient_descent (weights, viols, td_probs, SRs, epoch_num):
         #Police negative weights:
         if not NEG_WEIGHTS:
             new_weights = np.maximum(new_weights, 0)
+            
+        #Check to see if we've learned the language already:
+        learned = True
+        for datum_index, form in enumerate(SRs):
+            if td_probs[datum_index] <= 0:
+                #We're only checking correct forms, skip the incorrect ones.
+                continue
+            SR_indeces = sr2datum[form] #Find all the training data that use this SR
+            UR_indeces = ur2datum[ur[datum_index]] #Find all the training data that use this UR
+            predicted_SRprob = sum(le_probs[SR_indeces]) #Sum the SR probs (merges different HR's)
+            predicted_URprob = sum(le_probs[UR_indeces]) #Sum the UR probs (merges different SR's and HR's)
+            if predicted_URprob == 0:
+                raise Exception("Rounding error! pr(UR)=0")
+            else:
+                conditional_prob = predicted_SRprob/predicted_URprob #Find the prob of this SR, given its UR
+            if conditional_prob < .9: #If >90% of prob isn't given to the correct SR...
+                learned = False
+                break
+        if learned:
+            print("\t"+str(1+epoch)+" epochs to completion!")
+            ep_file.write(language+"\t"+str(epoch)+"\n")
+            break
+    
+    if not learned:
+        ep_file.write(language+"\t-1\n") #-1 epochs for learning failure, convention borrowed from Josh
         
     return new_weights 
     
@@ -158,12 +187,8 @@ success_file.write("Language,Successful?\n")
 input_files = [fn for fn in listdir(path.join("Input_Files", LANG_SET)) if ".csv" in fn]
 test_langs = [sub("[^0-9]", "", l) for l in input_files]
 
-#This makes it only look at the file labeled "tsX" 
-#(for debugging purposes, leave commented if you're doing real stuff):
-#X = "1"
-#input_files = ["ts"+X+".csv"]
-#test_langs = [X]
-
+if METHOD == "gd":
+    ep_file = open(path.join("Output_Files", "EpochsToConvergence_"+my_time+".txt"), "w")
 for lang_index, language in enumerate(test_langs):      
     #####TRAINING DATA##### 
     #Needs to create three numpy arrays:
@@ -188,6 +213,7 @@ for lang_index, language in enumerate(test_langs):
     ur = []
     hr = []
     input_lines = []
+    kind_of_line = []
     for row in tableaux_file.readlines():
         input_lines.append(row.rstrip().split(","))
         ur_line = search("^([^,]+),*\n", row)
@@ -195,13 +221,16 @@ for lang_index, language in enumerate(test_langs):
         hr_line = search("^,,,([^,]+),(.+)", row)
         
         if ur_line:
+            kind_of_line.append("ur")
             my_in = ur_line.group(1)
             continue
         elif sr_line:
+            kind_of_line.append("sr")
             my_out = sr_line.group(1)
             my_prob = float(sr_line.group(2))
             continue
         elif hr_line:
+            kind_of_line.append("hr")
             my_hid = hr_line.group(1)
             raw_viols = hr_line.group(2).rstrip().split(",")
             my_viols = [-1 * float(viol) for viol in raw_viols]  
@@ -226,21 +255,27 @@ for lang_index, language in enumerate(test_langs):
     for datum_index, underlying_form in enumerate(ur):
         ur2datum[underlying_form].append(datum_index)
     
-    #Tweak the initial probabilities so that they make sense:
+    #Normalize probabilities in the training data:
     new_probs = [] 
     probs = np.array(probs)
     for datum_index, this_prob in enumerate(probs):
         new_prob = this_prob/(len(sr2datum[sr[datum_index]])*UR_num)
         new_probs.append(new_prob)
       
-    #Vectors that we need: 
+    #Initializing vectors for the grammar's weights, constraint violations, 
+    #and candidate probabilities: 
     if RAND_WEIGHTS:
         w = list(np.random.uniform(low=0.0, high=10.0, size=len(v[0])))   #Init constraint weights = rand 1-10
         print ("Initial weights: ", w)
     else:  
         w = [INIT_WEIGHT for c in v[0]]  #Init constraint weights = INIT_WEIGHT
-    v = np.array(v)                   #Constraint violations
-    p = np.array(new_probs)  
+    
+    #If you want to start the model off with a particular set of weights, 
+    #do that here (needs to be in the right order!):
+    #w = [30.698, 15.175, 0.000, 19.877, 2.076, 1.630, 6.142, 0.000, 1.281, 5.335, 1.331, 24.222, 18.229]
+
+    v = np.array(v) #Constraint violations                  
+    p = np.array(new_probs) #Probabilities in training data 
     
     #####LEARNING##### 
     if METHOD == "lbfgsb":
@@ -250,13 +285,12 @@ for lang_index, language in enumerate(test_langs):
         else:
             lower_bound = 0.0    
         final_weights = minimize(objective_func, w, args=(v, p, sr), method="L-BFGS-B", bounds=[(lower_bound, None) for x in w])['x']
-    elif METHOD == "gd":
+    elif METHOD == "gd":       
         final_weights = gradient_descent(w, v, p, sr, EPOCHS)
     elif METHOD == "cg":
         final_weights = minimize(objective_func, w, args=(v, p, sr), method="CG", options={'maxiter':15000})['x']
     else:
-        raise Exception("Unkown method! (Must be 'lbfgsb' or 'gd'.)")
-    
+        raise Exception("Unkown method! (Must be 'lbfgsb', 'cg', or 'gd'.)")
     
     current_probs = get_predicted_probs(np.array(final_weights), v)
            
@@ -292,13 +326,13 @@ for lang_index, language in enumerate(test_langs):
         brief_output_file.write(str(fw)+",")
     brief_output_file.write("\n")
     datum_index = 0
-    for old_line in input_lines:
-        if len(old_line) == 1:
+    for old_line, line_type in zip(input_lines, kind_of_line):
+        if line_type == "ur":
             UR = old_line[0]
-        elif len(old_line) == 3:
+        elif line_type == "sr":
             SR = old_line[1]
             TD_prob = old_line[2]
-        elif len(old_line) > 4:
+        elif line_type == "hr":
             HR = old_line[3]
             absProb = current_probs[datum_index]
             normedProb = absProb/ur2totalProbs[UR]
@@ -319,19 +353,22 @@ for lang_index, language in enumerate(test_langs):
         output_file.write(str(fw)+",")
     output_file.write("\n")
     datum_index = 0
-    for old_line in input_lines:
-        if len(old_line) == 3:
+    for old_line, line_type in zip(input_lines, kind_of_line):
+        if line_type == "sr":
             new_line = old_line+[str(mapping2prob[(ur[datum_index],sr[datum_index])]/ur2totalProbs[ur[datum_index]])]
             output_file.write(",".join(new_line)+"\n")            
-        elif len(old_line) < 4:
+        elif line_type == "ur":
             output_file.write(",".join(old_line)+"\n") 
-        else:
+        elif line_type == "hr":
             new_line = old_line[:2]+["", "", str(current_probs[datum_index]/ur2totalProbs[ur[datum_index]]), str(current_probs[datum_index])]+old_line[3:]
             output_file.write(",".join(new_line)+"\n")
-            datum_index += 1   
+            datum_index += 1
+        else:
+            print(old_line)
+            raise Exception("Unexpected line type!")        
     output_file.close()    
 
-    #Success file:
+    #Success file (prints out each language and whether it was successfully learned):
     learned = True
     for datum_index, form in enumerate(sr):
         if probs[datum_index] != 1: 
@@ -359,5 +396,7 @@ for lang_index, language in enumerate(test_langs):
         print ("Language "+language+" was NOT learned.")
         success_file.write(language+",0\n")
         
-#Deal with output files:
+#Close output files:
 success_file.close()
+if METHOD == "gd":
+    ep_file.close()
