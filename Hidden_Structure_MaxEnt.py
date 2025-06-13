@@ -354,6 +354,7 @@ for lang_index, language in enumerate(test_langs):
     output_file.write("\n")
     datum_index = 0
     for old_line, line_type in zip(input_lines, kind_of_line):
+        old_line = re.sub(",+$", "", old_line)
         if line_type == "sr":
             new_line = old_line+[str(mapping2prob[(ur[datum_index],sr[datum_index])]/ur2totalProbs[ur[datum_index]])]
             output_file.write(",".join(new_line)+"\n")            
