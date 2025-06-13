@@ -215,6 +215,7 @@ for lang_index, language in enumerate(test_langs):
     input_lines = []
     kind_of_line = []
     for row in tableaux_file.readlines():
+        row = sub(",+$", "", row)
         input_lines.append(row.rstrip().split(","))
         ur_line = search("^([^,]+),*\n", row)
         sr_line = search("^,([^,]+),([^,]+),*", row)
@@ -354,7 +355,6 @@ for lang_index, language in enumerate(test_langs):
     output_file.write("\n")
     datum_index = 0
     for old_line, line_type in zip(input_lines, kind_of_line):
-        old_line = sub(",+$", "", old_line)
         if line_type == "sr":
             new_line = old_line+[str(mapping2prob[(ur[datum_index],sr[datum_index])]/ur2totalProbs[ur[datum_index]])]
             output_file.write(",".join(new_line)+"\n")            
